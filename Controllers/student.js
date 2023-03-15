@@ -12,18 +12,34 @@ exports.postStudent = async (req, res, next) => {
   // const file = req.files.file;
   // const filename = file.name;
 
+  const token = req.headers.authorization;
+  let faculty = await Faculty.findOne({ google_id: { idToken: token } });
+  if (!faculty) {
+    res.status(401).json({
+      statusCode: 401,
+      message: "Session timed out! Please Sign-In again.",
+      result: null,
+    });
+    return;
+  }
+
   try {
     if (req.file == undefined) {
-      return res.status(400).send("Please upload an excel file!");
+      res.status(402).json({
+        statusCode: 402,
+        message: "Please upload an excel file!",
+        result: null,
+      });
+      return;
     }
-    console.log(req.file);
+    // console.log(req.file);
     const result = excelToJson({
       sourceFile: `./upload/${req.file.originalname}`,
       header: {
         rows: 1,
       },
     });
-    console.log(result);
+    // console.log(result);
     for (let i of result.Sheet1) {
       const st = await Student.find({ name: i.A, rollNumber: i.B, email: i.C });
       if (st.length === 0) {
@@ -32,10 +48,16 @@ exports.postStudent = async (req, res, next) => {
     }
 
     console.log("Students has been added");
-    res.status(200).send({ message: "Students has been added" });
+    res.status(200).json({
+      statusCode: 200,
+      message: "Students has been added",
+    });
   } catch (e) {
     console.log(e.message);
-    res.status(400).send({ message: "something went wrong" });
+    res.status(404).json({
+      statusCode: 404,
+      message: "Something Went Wrong",
+    });
   }
 
   // if (!name || !email || !roll) {
@@ -67,30 +89,63 @@ exports.getStudents = async (req, res, next) => {
 };
 
 exports.postRemoveStudentAsTA = async (req, res, next) => {
-  const { roll } = req.body;
+  const token = req.headers.authorization;
+  let faculty = await Faculty.findOne({ google_id: { idToken: token } });
+  if (!faculty) {
+    res.status(401).json({
+      statusCode: 401,
+      message: "Session timed out! Please Sign-In again.",
+      result: null,
+    });
+    return;
+  }
+  const { students } = req.body;
   console.log("remove ta");
-  if (!roll) {
-    res.status(418).send({ message: "missing data" });
+  console.log(students);
+  if (!students || students.length === 0) {
+    res.status(418).send({ message: "Missing Data" });
+    return;
   }
 
   try {
-    const student = await Student.find({
-      rollNumber: roll,
-    });
+    for (let i of students) {
+      const roll = i.value.match(/\(([^)]+)\)/)[1];
+      const temp = i.value.match(/\(([^)]+)\)/)[0];
+      const studentName = i.value.replace(temp, "");
 
-    const course = await Course.find({ _id: student[0].assignedCourse });
-    const index = course[0].allocatedTA.indexOf(student[0]._id);
-    if (index > -1) {
-      course[0].allocatedTA.splice(index, 1);
-      await course[0].save();
-      student[0].isAssgined = false;
-      student[0].assignedCourse = null;
-      student[0].assignedFaculty = null;
-      await student[0].save();
+      const student = await Student.find({
+        rollNumber: roll,
+        name: studentName,
+      });
+
+      // console.log(student);
+
+      if (student.length === 0) {
+        res.status(408).send({ message: "Student not found" });
+        return;
+      }
+      if (student[0].isAssgined === false) {
+        res.status(410).send({ message: "Student is not a TA" });
+        return;
+      }
+
+      const course = await Course.find({ _id: student[0].assignedCourse });
+      // console.log(student[0].assignedCourse);
+      // console.log(course);
+      const index = course[0].allocatedTA.indexOf(student[0]._id);
+      console.log(index);
+      if (index > -1) {
+        course[0].allocatedTA.splice(index, 1);
+        await course[0].save();
+        student[0].isAssgined = false;
+        student[0].assignedCourse = null;
+        student[0].assignedFaculty = null;
+        await student[0].save();
+      }
     }
-    res.status(200).send({ message: "Student has been Removed" });
+    res.status(200).send({ message: "Students has been Removed" });
   } catch (e) {
     console.log(e.message);
-    res.status(417).send({ message: "Student has not been Removed" });
+    res.status(417).send({ message: "Students has not been Removed" });
   }
 };

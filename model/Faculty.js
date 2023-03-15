@@ -12,10 +12,6 @@ const facultySchema = new mongoose.Schema({
   },
   courses: [{ type: Schema.Types.ObjectId, ref: "Course" }],
   google_id: {
-    id: {
-      type: String,
-      required: false,
-    },
     idToken: {
       type: String,
       required: false,

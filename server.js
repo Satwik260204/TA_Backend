@@ -8,8 +8,8 @@ const cors = require("cors");
 
 // const temp = async () => {
 //   await Faculty.create({
-//     name: "Prathamesh",
-//     email: "prathameshjondhale100@gmail.com",
+//     name: "Prathamesh Student",
+//     email: "102001012@smail.iitpkd.ac.in",
 //   });
 // };
 // temp();

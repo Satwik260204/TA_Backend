@@ -27,6 +27,17 @@ exports.getFaculties = async (req, res, next) => {
 
 exports.postTAtoFaculty = async (req, res, next) => {
   //   console.log("www");
+
+  const token = req.headers.authorization;
+  let faculty1 = await Faculty.findOne({ google_id: { idToken: token } });
+  if (!faculty1) {
+    res.status(401).json({
+      statusCode: 401,
+      message: "Session timed out! Please Sign-In again.",
+      result: null,
+    });
+    return;
+  }
   const { students } = req.body;
   const { faculty } = req.body;
   const { courses } = req.body;
@@ -34,7 +45,7 @@ exports.postTAtoFaculty = async (req, res, next) => {
   //   console.log(info);
 
   if (!students || !faculty || !courses) {
-    res.status(418).send({ message: "missing data" });
+    res.status(418).send({ message: "Missing Data" });
   }
 
   try {
@@ -72,7 +83,7 @@ exports.postTAtoFaculty = async (req, res, next) => {
         getCourse[0].allocatedTA.push(getStudent[0]._id);
         await getCourse[0].save();
       } catch (e) {
-        res.status(418).send({ message: "something went wrong" });
+        res.status(418).send({ message: "Something Went Wrong" });
         console.log(e.message);
       }
 
@@ -110,10 +121,24 @@ exports.postFaculty = async (req, res, next) => {
   //   console.log(e.message);
   //   res.status(417).send({ message: "Faculty has not been added" });
   // }
-
+  const token = req.headers.authorization;
+  let faculty = await Faculty.findOne({ google_id: { idToken: token } });
+  if (!faculty) {
+    res.status(401).json({
+      statusCode: 401,
+      message: "Session timed out! Please Sign-In again.",
+      result: null,
+    });
+    return;
+  }
   try {
     if (req.file == undefined) {
-      return res.status(400).send("Please upload an excel file!");
+      res.status(402).json({
+        statusCode: 402,
+        message: "Please upload an excel file!",
+        result: null,
+      });
+      return;
     }
     // console.log(req.file);
     const result = excelToJson({
@@ -122,9 +147,10 @@ exports.postFaculty = async (req, res, next) => {
         rows: 1,
       },
     });
-    // console.log(result);
+    console.log(result);
     for (let i of result.Sheet1) {
       const fc = await Faculty.find({ name: i.A, email: i.B });
+      const cr = await Course.find({ name: i.C });
       if (fc.length === 0) {
         await Faculty.create({ name: i.A, email: i.B });
         await Course.create({ name: i.C });
@@ -135,14 +161,32 @@ exports.postFaculty = async (req, res, next) => {
         cr[0].allocatedFaculty = ft[0]._id;
         await ft[0].save();
         await cr[0].save();
+      } else {
+        if (cr.length === 0) {
+          await Course.create({ name: i.C });
+          const ft = await Faculty.find({ name: i.A, email: i.B });
+          const cr = await Course.find({ name: i.C });
+
+          ft[0].courses.push(cr[0]._id);
+          cr[0].allocatedFaculty = ft[0]._id;
+          await ft[0].save();
+          await cr[0].save();
+        }
       }
     }
 
     console.log("Faculties has been added");
-    res.status(200).send({ message: "Faculties has been added" });
+
+    res.status(200).json({
+      statusCode: 200,
+      message: "Faculties has been added",
+    });
   } catch (e) {
     console.log(e.message);
-    res.status(400).send({ message: "something went wrong" });
+    res.status(404).json({
+      statusCode: 404,
+      message: "Something Went Wrong",
+    });
   }
 };
 

@@ -6,28 +6,31 @@ const oauth = require("../Common/oauth");
 exports.userCheck = async (req, res, next) => {
   try {
     const { userDetails } = req.body;
-    let user = await oauth(userDetails);
+    let user;
+    try {
+      user = await oauth(userDetails);
+    } catch (error) {
+      console.log(error);
+    }
     // console.log(user);
     const id = user["sub"];
     const email = user.email.split("@");
     const email_check = email[1];
-
-    if (email_check === "iitpkd.ac.in" || email_check === "gmail.com") {
+    console.log(email_check);
+    if (
+      email_check === "iitpkd.ac.in" ||
+      email_check === "gmail.com" ||
+      email_check === "smail.iitpkd.ac.in"
+    ) {
       let faculty = await Faculty.findOne({ email: user.email });
       if (!faculty) {
-        res.status(200).json({
-          statusCode: 200,
-          message: "success",
-          result: {
-            registered: false,
-            position: "faculty",
-            user_details: user,
-            token: userDetails,
-          },
+        res.status(201).json({
+          statusCode: 201,
+          message: "Email is not found in the Database",
         });
         return;
       }
-      faculty.google_id.idToken = userDetails.idToken;
+      faculty.google_id.idToken = `${userDetails}`;
       let role;
       if (faculty.isAdmin) {
         role = "admin";
