@@ -4,10 +4,19 @@ const app = express();
 const mongoose = require("mongoose");
 const Faculty = require("./model/Faculty");
 const Student = require("./model/Student");
+const SuperAdmin = require("./model/SuperAdmin");
 const cors = require("cors");
 
 // const temp = async () => {
 //   await Faculty.create({
+//     name: "Prathamesh",
+//     email: "prathameshjondhale100@gmail.com",
+//   });
+// };
+// temp();
+
+// const temp = async () => {
+//   await SuperAdmin.create({
 //     name: "Prathamesh Student",
 //     email: "102001012@smail.iitpkd.ac.in",
 //   });
@@ -23,6 +32,7 @@ const MONGODB_URI =
 const facultyRoute = require("./routes/faculty");
 const studentRoute = require("./routes/student");
 const authRoute = require("./routes/auth_check");
+const superAdminRoute = require("./routes/super_admin");
 
 // run();
 
@@ -56,6 +66,7 @@ app.use(
 app.use(facultyRoute);
 app.use(studentRoute);
 app.use(authRoute);
+app.use(superAdminRoute);
 
 mongoose
   .connect(MONGODB_URI)

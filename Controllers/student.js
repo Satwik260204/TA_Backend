@@ -3,6 +3,7 @@ const Student = require("../model/Student");
 ("use strict");
 const excelToJson = require("convert-excel-to-json");
 const Course = require("../model/Course");
+const SuperAdmin = require("../model/SuperAdmin");
 
 exports.postStudent = async (req, res, next) => {
   // const { name } = req.body;
@@ -13,8 +14,9 @@ exports.postStudent = async (req, res, next) => {
   // const filename = file.name;
 
   const token = req.headers.authorization;
+  let super_admin = await SuperAdmin.findOne({ google_id: { idToken: token } });
   let faculty = await Faculty.findOne({ google_id: { idToken: token } });
-  if (!faculty) {
+  if (!faculty && !super_admin) {
     res.status(401).json({
       statusCode: 401,
       message: "Session timed out! Please Sign-In again.",
@@ -143,9 +145,39 @@ exports.postRemoveStudentAsTA = async (req, res, next) => {
         await student[0].save();
       }
     }
-    res.status(200).send({ message: "Students has been Removed" });
+
+    let response;
+    try {
+      response = await Faculty.find().populate({
+        path: "courses",
+        populate: {
+          path: "allocatedTA",
+          model: "Student",
+        },
+      });
+    } catch (e) {
+      res.status(418).send({ message: "something went wrong" });
+      return;
+      console.log(e.message);
+    }
+
+    let stdResponse;
+    try {
+      stdResponse = await Student.find();
+      // console.log(response);
+    } catch (e) {
+      console.log(e.message);
+    }
+    res.status(200).json({
+      statusCode: 200,
+      message: "Selected Students has been Removed as TA",
+      result: {
+        data1: response,
+        data2: stdResponse,
+      },
+    });
   } catch (e) {
     console.log(e.message);
-    res.status(417).send({ message: "Students has not been Removed" });
+    res.status(417).send({ message: "Students has not been Removed as TA" });
   }
 };

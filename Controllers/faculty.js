@@ -3,6 +3,7 @@ const Student = require("../model/Student");
 const Course = require("../model/Course");
 ("use strict");
 const excelToJson = require("convert-excel-to-json");
+const SuperAdmin = require("../model/SuperAdmin");
 
 exports.getFaculties = async (req, res, next) => {
   //   console.log("www");
@@ -95,9 +96,39 @@ exports.postTAtoFaculty = async (req, res, next) => {
       } catch (e) {
         res.status(418).send({ message: "something went wrong" });
         console.log(e.message);
+        return;
       }
     }
-    res.status(200).send({ message: "TA's has been allocated" });
+
+    let response;
+    try {
+      response = await Faculty.find().populate({
+        path: "courses",
+        populate: {
+          path: "allocatedTA",
+          model: "Student",
+        },
+      });
+    } catch (e) {
+      res.status(418).send({ message: "something went wrong" });
+      console.log(e.message);
+    }
+    let stdResponse;
+    try {
+      stdResponse = await Student.find();
+      // console.log(response);
+    } catch (e) {
+      console.log(e.message);
+    }
+    res.status(200).json({
+      statusCode: 200,
+      message: "TA's has been allocated",
+      result: {
+        data1: response,
+        data2: stdResponse,
+      },
+    });
+    // res.status(200).send({ message: "TA's has been allocated" });
     console.log("TA's has been allocated");
   } catch (e) {
     console.log(e.message);
@@ -122,8 +153,9 @@ exports.postFaculty = async (req, res, next) => {
   //   res.status(417).send({ message: "Faculty has not been added" });
   // }
   const token = req.headers.authorization;
+  let superAdmin = await SuperAdmin.findOne({ google_id: { idToken: token } });
   let faculty = await Faculty.findOne({ google_id: { idToken: token } });
-  if (!faculty) {
+  if (!faculty && !superAdmin) {
     res.status(401).json({
       statusCode: 401,
       message: "Session timed out! Please Sign-In again.",
