@@ -4,6 +4,7 @@ const Student = require("../model/Student");
 const excelToJson = require("convert-excel-to-json");
 const Course = require("../model/Course");
 const SuperAdmin = require("../model/SuperAdmin");
+const Department = require("../model/Department");
 
 exports.postStudent = async (req, res, next) => {
   // const { name } = req.body;
@@ -15,7 +16,10 @@ exports.postStudent = async (req, res, next) => {
 
   const token = req.headers.authorization;
   let super_admin = await SuperAdmin.findOne({ google_id: { idToken: token } });
-  let faculty = await Faculty.findOne({ google_id: { idToken: token } });
+  let faculty = await Faculty.findOne({
+    google_id: { idToken: token },
+    isAdmin: true,
+  });
   if (!faculty && !super_admin) {
     res.status(401).json({
       statusCode: 401,
@@ -43,9 +47,25 @@ exports.postStudent = async (req, res, next) => {
     });
     // console.log(result);
     for (let i of result.Sheet1) {
+      const dp = await Department.find({ name: i.D });
+      if (dp.length === 0) {
+        res.status(402).json({
+          statusCode: 402,
+          message: "Departments Does not Match!",
+          result: null,
+        });
+        return;
+      }
+    }
+    for (let i of result.Sheet1) {
       const st = await Student.find({ name: i.A, rollNumber: i.B, email: i.C });
       if (st.length === 0) {
-        await Student.create({ name: i.A, rollNumber: i.B, email: i.C });
+        await Student.create({
+          name: i.A,
+          rollNumber: i.B,
+          email: i.C,
+          department: i.D,
+        });
       }
     }
 
@@ -77,10 +97,23 @@ exports.postStudent = async (req, res, next) => {
 };
 
 exports.getStudents = async (req, res, next) => {
+  const token = req.headers.authorization;
+  let super_admin = await SuperAdmin.findOne({ google_id: { idToken: token } });
+  let faculty = await Faculty.findOne({
+    google_id: { idToken: token },
+  });
+  if (!faculty && !super_admin) {
+    res.status(401).json({
+      statusCode: 401,
+      message: "Session timed out! Please Sign-In again.",
+      result: null,
+    });
+    return;
+  }
   console.log("getStudents");
   let response;
   try {
-    response = await Student.find();
+    response = await Student.find().populate("assignedFaculty");
     // console.log(response);
     res.status(200).send({
       data: response,
@@ -135,7 +168,7 @@ exports.postRemoveStudentAsTA = async (req, res, next) => {
       // console.log(student[0].assignedCourse);
       // console.log(course);
       const index = course[0].allocatedTA.indexOf(student[0]._id);
-      console.log(index);
+      // console.log(index);
       if (index > -1) {
         course[0].allocatedTA.splice(index, 1);
         await course[0].save();
@@ -157,8 +190,8 @@ exports.postRemoveStudentAsTA = async (req, res, next) => {
       });
     } catch (e) {
       res.status(418).send({ message: "something went wrong" });
-      return;
       console.log(e.message);
+      return;
     }
 
     let stdResponse;
@@ -179,5 +212,35 @@ exports.postRemoveStudentAsTA = async (req, res, next) => {
   } catch (e) {
     console.log(e.message);
     res.status(417).send({ message: "Students has not been Removed as TA" });
+  }
+};
+
+exports.deleteAllStudent = async (req, res, next) => {
+  const token = req.headers.authorization;
+  let super_admin = await SuperAdmin.findOne({ google_id: { idToken: token } });
+  let faculty = await Faculty.findOne({
+    google_id: { idToken: token },
+  });
+  if (!faculty && !super_admin) {
+    res.status(401).json({
+      statusCode: 401,
+      message: "Session timed out! Please Sign-In again.",
+      result: null,
+    });
+    return;
+  }
+  console.log("delete Students");
+  try {
+    await Student.deleteMany({});
+    res.status(200).json({
+      statusCode: 200,
+      message: "Students has been deleted",
+    });
+  } catch (error) {
+    console.log(error);
+    res.status(401).json({
+      statusCode: 401,
+      message: "Students has not been deleted",
+    });
   }
 };

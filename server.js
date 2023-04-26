@@ -33,6 +33,7 @@ const facultyRoute = require("./routes/faculty");
 const studentRoute = require("./routes/student");
 const authRoute = require("./routes/auth_check");
 const superAdminRoute = require("./routes/super_admin");
+const departmentRoute = require("./routes/department");
 
 // run();
 
@@ -63,10 +64,12 @@ app.use(
     origin: "*",
   })
 );
+app.use("/file", express.static(__dirname + "/upload", { fallthrough: false }));
 app.use(facultyRoute);
 app.use(studentRoute);
 app.use(authRoute);
 app.use(superAdminRoute);
+app.use(departmentRoute);
 
 mongoose
   .connect(MONGODB_URI)

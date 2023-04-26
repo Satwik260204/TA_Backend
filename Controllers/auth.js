@@ -40,12 +40,20 @@ exports.userCheck = async (req, res, next) => {
       }
       superAdmin.google_id.idToken = `${userDetails}`;
       await superAdmin.save();
+      let faculty = await Faculty.findOne();
+      let freeze = false;
+      if (!faculty) {
+        freeze = false;
+      } else if (faculty.readOnly) {
+        freeze = true;
+      }
       res.status(200).json({
         statusCode: 200,
         message: "success",
         result: {
           registered: true,
           position: "super_admin",
+          freeze: freeze,
           user_details: user,
           token: userDetails,
         },
@@ -57,15 +65,20 @@ exports.userCheck = async (req, res, next) => {
     ) {
       let faculty = await Faculty.findOne({ email: user.email });
       if (!faculty) {
-        res.status(200).json({
-          statusCode: 200,
+        res.status(400).json({
+          statusCode: 400,
           message: "Email is not found in the Database",
         });
         return;
       }
       faculty.google_id.idToken = `${userDetails}`;
       let role;
-      if (faculty.isAdmin) {
+      let freeze = false;
+      let dp = faculty.department;
+      if (faculty.readOnly) {
+        role = "readOnly";
+        freeze = faculty.readOnly;
+      } else if (faculty.isAdmin) {
         role = "admin";
       } else {
         role = "faculty";
@@ -77,8 +90,10 @@ exports.userCheck = async (req, res, next) => {
         result: {
           registered: true,
           position: role,
+          freeze: freeze,
           user_details: user,
           token: userDetails,
+          department: dp,
         },
       });
     }

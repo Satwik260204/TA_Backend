@@ -11,6 +11,10 @@ const facultySchema = new mongoose.Schema({
     required: true,
   },
   courses: [{ type: Schema.Types.ObjectId, ref: "Course" }],
+  department: {
+    type: String,
+    required: true,
+  },
   google_id: {
     idToken: {
       type: String,
@@ -18,6 +22,10 @@ const facultySchema = new mongoose.Schema({
     },
   },
   isAdmin: {
+    type: Boolean,
+    default: false,
+  },
+  readOnly: {
     type: Boolean,
     default: false,
   },

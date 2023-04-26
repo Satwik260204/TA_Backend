@@ -4,9 +4,23 @@ const Course = require("../model/Course");
 ("use strict");
 const excelToJson = require("convert-excel-to-json");
 const SuperAdmin = require("../model/SuperAdmin");
+const Department = require("../model/Department");
 
 exports.getFaculties = async (req, res, next) => {
   //   console.log("www");
+  const token = req.headers.authorization;
+  let super_admin = await SuperAdmin.findOne({ google_id: { idToken: token } });
+  let faculty = await Faculty.findOne({
+    google_id: { idToken: token },
+  });
+  if (!faculty && !super_admin) {
+    res.status(401).json({
+      statusCode: 401,
+      message: "Session timed out! Please Sign-In again.",
+      result: null,
+    });
+    return;
+  }
   let response;
   try {
     response = await Faculty.find().populate({
@@ -154,7 +168,10 @@ exports.postFaculty = async (req, res, next) => {
   // }
   const token = req.headers.authorization;
   let superAdmin = await SuperAdmin.findOne({ google_id: { idToken: token } });
-  let faculty = await Faculty.findOne({ google_id: { idToken: token } });
+  let faculty = await Faculty.findOne({
+    google_id: { idToken: token },
+    isAdmin: true,
+  });
   if (!faculty && !superAdmin) {
     res.status(401).json({
       statusCode: 401,
@@ -181,10 +198,21 @@ exports.postFaculty = async (req, res, next) => {
     });
     console.log(result);
     for (let i of result.Sheet1) {
+      const dp = await Department.find({ name: i.D });
+      if (dp.length === 0) {
+        res.status(402).json({
+          statusCode: 402,
+          message: "Departments Does not Match!",
+          result: null,
+        });
+        return;
+      }
+    }
+    for (let i of result.Sheet1) {
       const fc = await Faculty.find({ name: i.A, email: i.B });
       const cr = await Course.find({ name: i.C });
       if (fc.length === 0) {
-        await Faculty.create({ name: i.A, email: i.B });
+        await Faculty.create({ name: i.A, email: i.B, department: i.D });
         await Course.create({ name: i.C });
         const ft = await Faculty.find({ name: i.A, email: i.B });
         const cr = await Course.find({ name: i.C });
@@ -223,6 +251,19 @@ exports.postFaculty = async (req, res, next) => {
 };
 
 exports.postFacultyCourse = async (req, res, next) => {
+  const token = req.headers.authorization;
+  let super_admin = await SuperAdmin.findOne({ google_id: { idToken: token } });
+  let faculty = await Faculty.findOne({
+    google_id: { idToken: token },
+  });
+  if (!faculty && !super_admin) {
+    res.status(401).json({
+      statusCode: 401,
+      message: "Session timed out! Please Sign-In again.",
+      result: null,
+    });
+    return;
+  }
   console.log("get Faculty");
   const { email } = req.body;
   let response;
@@ -236,5 +277,36 @@ exports.postFacultyCourse = async (req, res, next) => {
   } catch (e) {
     res.status(418).send({ message: "something went wrong" });
     console.log(e.message);
+  }
+};
+
+exports.deleteAllFaculty = async (req, res, next) => {
+  const token = req.headers.authorization;
+  let super_admin = await SuperAdmin.findOne({ google_id: { idToken: token } });
+  let faculty = await Faculty.findOne({
+    google_id: { idToken: token },
+  });
+  if (!faculty && !super_admin) {
+    res.status(401).json({
+      statusCode: 401,
+      message: "Session timed out! Please Sign-In again.",
+      result: null,
+    });
+    return;
+  }
+  console.log("delete Faculty");
+  try {
+    await Faculty.deleteMany({});
+    await Course.deleteMany({});
+    res.status(200).json({
+      statusCode: 200,
+      message: "Faculties has been deleted",
+    });
+  } catch (error) {
+    console.log(error);
+    res.status(401).json({
+      statusCode: 401,
+      message: "Faculties has not been deleted",
+    });
   }
 };

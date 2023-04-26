@@ -8,5 +8,6 @@ const router = express.Router();
 router.post("/student", upload.single("file"), studentController.postStudent);
 router.get("/students", studentController.getStudents);
 router.post("/removeTA", studentController.postRemoveStudentAsTA);
+router.delete("/student/all", studentController.deleteAllStudent);
 
 module.exports = router;
