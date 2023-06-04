@@ -5,11 +5,12 @@ const oauth = require("../Common/oauth");
 const SuperAdmin = require("../model/SuperAdmin");
 
 //add your email here if you want to be a super admin
-let temp = "102001012@smail.iitpkd.ac.in";
+let temp = "102001012@smail.iitpkd.ac.in,102001011@smail.iitpkd.ac.in";
 const superAdmins = temp.split(",");
 
 exports.userCheck = async (req, res, next) => {
   // console.log("ll");
+
   try {
     const { userDetails } = req.body;
     let user;
@@ -98,7 +99,7 @@ exports.userCheck = async (req, res, next) => {
       });
     }
   } catch (error) {
-    console.log(error);
+    console.log(error.response.data);
     res
       .status(500)
       .send({ message: "Something Went Wrong Please Try again later" });

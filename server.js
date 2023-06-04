@@ -5,6 +5,8 @@ const mongoose = require("mongoose");
 const Faculty = require("./model/Faculty");
 const Student = require("./model/Student");
 const SuperAdmin = require("./model/SuperAdmin");
+require('dotenv').config();
+
 const cors = require("cors");
 
 // const temp = async () => {
@@ -34,7 +36,7 @@ const studentRoute = require("./routes/student");
 const authRoute = require("./routes/auth_check");
 const superAdminRoute = require("./routes/super_admin");
 const departmentRoute = require("./routes/department");
-
+const emailRoute = require("./routes/email");
 // run();
 
 // async function run() {
@@ -70,6 +72,7 @@ app.use(studentRoute);
 app.use(authRoute);
 app.use(superAdminRoute);
 app.use(departmentRoute);
+app.use(emailRoute);
 
 mongoose
   .connect(MONGODB_URI)
