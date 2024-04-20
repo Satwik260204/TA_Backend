@@ -189,6 +189,7 @@ exports.postRemoveStudentAsTA = async (req, res, next) => {
           model: "Student",
         },
       });
+      
     } catch (e) {
       res.status(418).send({ message: "something went wrong" });
       console.log(e.message);

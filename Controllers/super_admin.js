@@ -340,6 +340,26 @@ exports.postPh2 = async (req,res,next)=>{
     let ph=await Phase.findOne();
     ph.student_phase=ph2;
     await ph.save();
+    if(ph2){
+      let cr=await Course.find();
+      
+      for(let i of cr){
+        i.appliedStudents=[];
+        await i.save();
+      }
+    }else{
+      let st=await Student.find();
+      // console.log(st);
+      for(let s of st){
+        for(let i of s.preferences){
+          let c=await Course.findOne({_id:i});
+          console.log(c);
+          c.appliedStudents.push(s._id);
+          await c.save();
+        }
+      }
+
+    }
 
     res.status(200).json({
       statusCode: 200,
