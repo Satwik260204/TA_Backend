@@ -12,7 +12,13 @@ const studentSchema = new mongoose.Schema({
   },
   department: {
     type: String,
-    required: true,
+    required: false,
+    default:"",
+  },
+  degree: {
+    type: String,
+    required: false,
+    default:"",
   },
   rollNumber: {
     type: Number,
@@ -31,6 +37,17 @@ const studentSchema = new mongoose.Schema({
     type: Schema.Types.ObjectId,
     ref: "Course",
   },
+  google_id: {
+    idToken: {
+      type: String,
+      required: false,
+    },
+  },
+  readOnly: {
+    type: Boolean,
+    default: false,
+  },
+  preferences:[{type: Schema.Types.ObjectId, ref: "Course"}],
 });
 
 module.exports = mongoose.model("Student", studentSchema);

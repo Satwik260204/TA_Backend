@@ -5,6 +5,7 @@ const mongoose = require("mongoose");
 const Faculty = require("./model/Faculty");
 const Student = require("./model/Student");
 const SuperAdmin = require("./model/SuperAdmin");
+const Phase = require("./model/Phase");
 require('dotenv').config();
 
 const cors = require("cors");
@@ -29,7 +30,7 @@ const cors = require("cors");
 // const fileupload = require("express-fileupload");
 
 const MONGODB_URI =
-  "mongodb+srv://Akuma:ta-allocation@cluster0.d0iqjdo.mongodb.net/test";
+  "mongodb+srv://saidelgy94:test123@cluster0.bo3stvr.mongodb.net/test3";
 
 const facultyRoute = require("./routes/faculty");
 const studentRoute = require("./routes/student");
@@ -37,6 +38,7 @@ const authRoute = require("./routes/auth_check");
 const superAdminRoute = require("./routes/super_admin");
 const departmentRoute = require("./routes/department");
 const emailRoute = require("./routes/email");
+const applicantRoute= require("./routes/applicant");
 // run();
 
 // async function run() {
@@ -73,6 +75,7 @@ app.use(authRoute);
 app.use(superAdminRoute);
 app.use(departmentRoute);
 app.use(emailRoute);
+app.use(applicantRoute);
 
 mongoose
   .connect(MONGODB_URI)

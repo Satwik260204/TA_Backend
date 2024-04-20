@@ -45,7 +45,7 @@ exports.postStudent = async (req, res, next) => {
         rows: 1,
       },
     });
-    // console.log(result);
+    //console.log(result);
     for (let i of result.Sheet1) {
       const dp = await Department.find({ name: i.D });
       if (dp.length === 0) {
@@ -110,11 +110,12 @@ exports.getStudents = async (req, res, next) => {
     });
     return;
   }
-  console.log("getStudents");
+  // console.log("getStudents");
   let response;
   try {
     response = await Student.find().populate("assignedFaculty");
-    // console.log(response);
+
+    //console.log(response);
     res.status(200).send({
       data: response,
     });
@@ -135,8 +136,8 @@ exports.postRemoveStudentAsTA = async (req, res, next) => {
     return;
   }
   const { students } = req.body;
-  console.log("remove ta");
-  console.log(students);
+  // console.log("remove ta");
+  // console.log(students);
   if (!students || students.length === 0) {
     res.status(418).send({ message: "Missing Data" });
     return;

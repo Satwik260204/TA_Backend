@@ -6,8 +6,6 @@ const client = new OAuth2Client(
 );
 
 
-
-
 module.exports = async (token) => {
   const ticket = await client.verifyIdToken({
     idToken: token,
