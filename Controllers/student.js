@@ -246,3 +246,38 @@ exports.deleteAllStudent = async (req, res, next) => {
     });
   }
 };
+
+exports.otherDepartment = async (req, res, next) => {
+  const token = req.headers.authorization;
+  let super_admin = await SuperAdmin.findOne({ google_id: { idToken: token } });
+  let faculty = await Faculty.findOne({
+    google_id: { idToken: token },
+    isAdmin:true,
+  });
+  if (!faculty && !super_admin) {
+    res.status(401).json({
+      statusCode: 401,
+      message: "Session timed out! Please Sign-In again.",
+      result: null,
+    });
+    return;
+  }
+  const {student,department}=req.body;
+  //console.log("other dept");
+  try {
+    const std=await Student.findOne({rollNumber:student.value});
+    std.otherDepartment=department.value;
+    await std.save();
+
+    res.status(200).json({
+      statusCode: 200,
+      message: "Other department has been added",
+    });
+  } catch (error) {
+    console.log(error);
+    res.status(401).json({
+      statusCode: 401,
+      message: "Other department has not been added",
+    });
+  }
+};

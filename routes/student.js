@@ -9,5 +9,6 @@ router.post("/student", upload.single("file"), studentController.postStudent);
 router.get("/students", studentController.getStudents);
 router.post("/removeTA", studentController.postRemoveStudentAsTA);
 router.delete("/student/all", studentController.deleteAllStudent);
+router.post("/tool",studentController.otherDepartment);
 
 module.exports = router;
