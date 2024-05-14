@@ -2,11 +2,8 @@
 
 TA Allocation Web Application for University using MERN Stack. Super Admin can assign HOD for the particular department. Courses can be floated by the HOD of the department and teachers can select students for their courses.
 
-FrontEnd Code - https://github.com/RGLxAkuma/TA-Allocation-Portal-Frontend
+FrontEnd Code - https://github.com/Satwik260204/TA_Frontend
 
-## Workflow
-
-![App Screenshot](https://i.postimg.cc/htQmBSCn/TA-Allocation-Portal.png)
 
 ### Installation
 
@@ -202,8 +199,8 @@ Now open a web browser and go to the url [http://localhost:4000](http://localhos
 
 ## Authors
 
-- **Prathamesh Jondhale** -[RGLxAkuma](https://github.com/RGLxAkuma)
-- **Himanshu Kumar** -[Himanshukr033](https://github.com/Himanshukr033)
+- **Govardanam Satwik** -[Satwik260204](https://github.com/RGLxAkuma)
+- **Voodam Sai Kumar Reddy** -[powercorp1](https://github.com/powercorp1)
 
 ## Acknowledgments
 
