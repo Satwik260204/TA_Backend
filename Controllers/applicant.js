@@ -46,6 +46,7 @@ exports.postDgDp = async (req, res, next) => {
 };
 
 exports.getCourses = async (req, res, next) => {
+  
   const token = req.headers.authorization;
   let student = await Student.findOne({ google_id: { idToken: token } });
   // console.log("hem");
@@ -60,26 +61,19 @@ exports.getCourses = async (req, res, next) => {
 
   let response, response2;
   try {
+    
     switch (student.degree) {
       case "BTech":
         response = await Course.find({
-          $or: [
-            {
-              BTech: student.department,
-            },
-            { BTech: student.otherDepartment },
-          ],
+          $or: [ { BTech: student.department }, { BTech: student.otherDepartment } ]
         }).populate({
           path: "allocatedFaculty",
         });
-        // console.log(response);
+        
         break;
       case "MTech":
         response = await Course.find({
-          $or: [
-            { MTech: student.department },
-            { MTech: student.otherDepartment },
-          ],
+          $or: [ { MTech: student.department }, { MTech: student.otherDepartment } ]
         }).populate({
           path: "allocatedFaculty",
         });
@@ -87,7 +81,7 @@ exports.getCourses = async (req, res, next) => {
         break;
       case "MS":
         response = await Course.find({
-          $or: [{ MS: student.department }, { MS: student.otherDepartment }],
+          $or: [ { MS: student.department }, { MS: student.otherDepartment } ]
         }).populate({
           path: "allocatedFaculty",
         });
@@ -95,7 +89,7 @@ exports.getCourses = async (req, res, next) => {
         break;
       case "MSc":
         response = await Course.find({
-          $or: [{ MSc: student.department }, { MSc: student.otherDepartment }],
+          $or: [ { MSc: student.department }, { MSc: student.otherDepartment } ]
         }).populate({
           path: "allocatedFaculty",
         });
@@ -103,7 +97,7 @@ exports.getCourses = async (req, res, next) => {
         break;
       case "PhD":
         response = await Course.find({
-          $or: [{ PhD: student.department }, { PhD: student.otherDepartment }],
+          $or: [ { PhD: student.department }, { PhD: student.otherDepartment } ]
         }).populate({
           path: "allocatedFaculty",
         });
@@ -114,14 +108,14 @@ exports.getCourses = async (req, res, next) => {
     response2 = await Student.findOne({
       google_id: { idToken: token },
     }).populate({
-      path: "preferences",
+      path: "preferences.course",
       populate: {
         path: "allocatedFaculty",
         model: Faculty,
       },
     });
-
-    // console.log(response2);
+    
+    //console.log(response2);
     res.status(200).send({
       data: response,
       data2: response2,
@@ -164,66 +158,65 @@ exports.postApplyTa = async (req, res, next) => {
     ];
     const code = [code1, code2, code3, code4, code5];
     student.preferences = [];
-    for (let i = 0; i < code.length; i++) {
-      if (code[i]) {
-        let cr = await Course.find({ code: code[i] });
-        student.preferences.push(cr[0]._id);
-        await student.save();
-        // cr[0].appliedStudents.push(student._id);
-        // await cr[0].save();
-      } else {
-        code[i] = "-1";
-      }
+    for (let i=0;i<code.length;i++) {
+      if(code[i])
+      {let cr = await Course.find({ code: code[i] });
+      student.preferences.push({
+        course:cr[0]._id,
+        number:i+1,
+      });
+      await student.save();
+      // cr[0].appliedStudents.push(student._id);
+      // await cr[0].save();
+    }else{
+      code[i]="-1";
     }
-    console.log("code");
-    console.log(code);
+  }
+  console.log("code");
+  console.log(code);
     let response;
     switch (student.degree) {
       case "BTech":
         response = await Course.find({
           BTech: student.department,
         });
-
+        
         break;
       case "MTech":
         response = await Course.find({
           MTech: student.department,
         });
-
+        
         break;
       case "MS":
         response = await Course.find({
           MS: student.department,
         });
-
+        
         break;
       case "MSc":
         response = await Course.find({
           MSc: student.department,
         });
-
+        
         break;
       case "PhD":
         response = await Course.find({
           PhD: student.department,
         });
-
+        
         break;
     }
-
-    let other_courses = response.filter(
-      (course) =>
-        course.code !== code[0] &&
-        course.code !== code[1] &&
-        course.code !== code[2] &&
-        course.code !== code[3] &&
-        course.code !== code[4]
-    );
-
-    console.log(other_courses);
-    for (let i of other_courses) {
+    
+    let other_courses=response.filter(course => course.code !== code[0] && course.code !== code[1] && course.code !== code[2] && course.code !== code[3] && course.code !== code[4]);
+   
+   console.log(other_courses);
+    for(let i of other_courses){
       let cr = await Course.find({ code: i.code });
-      student.preferences.push(cr[0]._id);
+      student.preferences.push({
+        course:cr[0]._id,
+        number:-1,
+      });
       await student.save();
     }
     res.status(200).json({

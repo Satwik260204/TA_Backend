@@ -3,6 +3,7 @@ const Student = require("../model/Student");
 const Course = require("../model/Course");
 const SuperAdmin = require("../model/SuperAdmin");
 const Phase = require("../model/Phase");
+const Timeline = require("../model/Timeline");
 const CsvParser = require("json2csv").Parser;
 
 exports.postAssignedAdmin = async (req, res, next) => {
@@ -167,7 +168,7 @@ exports.getAllocation = async (req, res, next) => {
  let course_pref = {};
  let course_pos = {};
  let res1 = await Student.find().populate({
- path: "preferences",
+ path: "preferences.course",
  model: Course,
  });
  for (let i of res1) {
@@ -176,14 +177,14 @@ exports.getAllocation = async (req, res, next) => {
  arr3 = [],
  arr4 = [];
  for (let j of i.preferences) {
- if (j.type === "LAB") {
- arr1.push(j.code);
- } else if (j.type === "BTC") {
- arr2.push(j.code);
- } else if (j.type === "STC") {
- arr3.push(j.code);
- } else if (j.type === "OTH") {
- arr4.push(j.code);
+ if (j.course.type === "LAB") {
+ arr1.push(j.course.code);
+ } else if (j.course.type === "BTC") {
+ arr2.push(j.course.code);
+ } else if (j.course.type === "STC") {
+ arr3.push(j.course.code);
+ } else if (j.course.type === "OTH") {
+ arr4.push(j.course.code);
  }
  }
  student_pref_lab[i.rollNumber] = arr1;
@@ -581,9 +582,12 @@ exports.postPh2 = async (req, res, next) => {
  // console.log(st);
  for (let s of st) {
  for (let i of s.preferences) {
- let c = await Course.findOne({ _id: i });
+ let c = await Course.findOne({ _id: i.course });
  console.log(c);
- c.appliedStudents.push(s._id);
+ c.appliedStudents.push({
+ student:s._id,
+ number:i.number,
+ });
  await c.save();
  }
  }
@@ -707,3 +711,51 @@ exports.getCsv = async (req, res, next) => {
  });
  }
 };
+
+exports.postTimeline=async (req,res,next)=>{
+ const token = req.headers.authorization;
+ let super_admin1 = await SuperAdmin.findOne({
+ google_id: { idToken: token },
+ });
+ if (!super_admin1) {
+ res.status(401).json({
+ statusCode: 401,
+ message: "Session timed out! Please Sign-In again.",
+ result: null,
+ });
+ return;
+ };
+ const {bmin,bmax,mtechmin,mtechmax,msmin,msmax,mscmin,mscmax,phdmin,phdmax}=req.body;
+ console.log(req.body);
+ console.log(!mtechmax);
+ if(!bmin || !bmax || !mtechmin || !mtechmax || !msmin || !msmax || !mscmin || !mscmax || !phdmin || !phdmax){
+ res.status(400).send({ message: "Missing Data" });
+ return;
+ }
+ try{
+ let tm=await Timeline.findOne();
+ tm.BTech.min=bmin;
+ tm.BTech.max=bmax;
+ tm.MTech.min=mtechmin;
+ tm.MTech.max=mtechmax;
+ tm.MS.min=msmin;
+ tm.MS.max=msmax;
+ tm.MSc.min=mscmin;
+ tm.MSc.max=mscmax;
+ tm.PhD.min=phdmin;
+ tm.PhD.max=phdmax;
+ await tm.save();
+
+ res.status(200).json({
+ statusCode: 200,
+ message: "Year limit have been set",
+ });
+
+ }catch(e){
+ res.status(404).json({
+ statusCode: 404,
+ message: "Something Went Wrong",
+ });
+ }
+
+}
