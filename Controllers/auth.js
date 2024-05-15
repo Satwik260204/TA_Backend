@@ -326,14 +326,14 @@ exports.userCheck = async (req, res, next) => {
  let ph2 = await Phase.findOne();
  let ph3 = await Phase.findOne();
 
- // let dg = "";
- // if (student.department === "" || !student.degree === "") {
- // flag1 = true;
- // console.log("entered");
- // } else if (student.department) {
- // dp = student.department;
- // dg = student.degree;
- // }
+ let dg = "";
+ if (student.department === "" || !student.degree === "") {
+ flag1 = true;
+ console.log("entered");
+ } else if (student.department) {
+ dp = student.department;
+ dg = student.degree;
+ }
  if (student.readOnly) {
  role = "readOnly";
  freeze = student.readOnly;
