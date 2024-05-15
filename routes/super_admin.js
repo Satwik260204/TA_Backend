@@ -12,4 +12,5 @@ router.get("/finalalloc", superAdminController.getCsv);
 router.post("/ph1",superAdminController.postPh1);
 router.post("/ph2",superAdminController.postPh2);
 router.post("/ph3",superAdminController.postPh3);
+router.post("/timeline",superAdminController.postTimeline);
 module.exports = router;

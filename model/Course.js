@@ -14,7 +14,7 @@ const courseSchema = new mongoose.Schema({
   
   taPos:{
     type:Number,
-    // default:0,
+    default:0,
   },
   BTech:{
     type:[{type:String}],
@@ -32,7 +32,7 @@ const courseSchema = new mongoose.Schema({
     type:[{type:String}],
   },
   preferences:[{type: Schema.Types.ObjectId, ref: "Student"}],
-  appliedStudents:[{type: Schema.Types.ObjectId, ref: "Student"}],
+  appliedStudents:[{student:{type: Schema.Types.ObjectId, ref: "Student"},number:{type:Number,default:-1}}],
   type:{
     type:String,
     required:true,
