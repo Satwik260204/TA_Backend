@@ -100,19 +100,19 @@ sudo yum install mongodb-compass-1.20.4.x86_64.rpm
 ###### SSH
 
 ```
-git clone git@github.com:RGLxAkuma/TA-Allocation-Portal-Frontend.git
+git clone git@github.com:Satwik260204/TA_Frontend.git
 ```
 
 ###### HTTPS
 
 ```
-git clone https://github.com/RGLxAkuma/TA-Allocation-Portal-Frontend.git
+git clone https://github.com/Satwik260204/TA_Frontend.git
 ```
 
 ###### GitHub CLI
 
 ```
-gh repo clone RGLxAkuma/TA-Allocation-Portal-Frontend
+gh repo clone RGLxAkuma/Satwik260204/TA_Frontend.git
 ```
 
 ##### Back-End
@@ -120,19 +120,19 @@ gh repo clone RGLxAkuma/TA-Allocation-Portal-Frontend
 ###### SSH
 
 ```
-git clone git@github.com:RGLxAkuma/TA-Allocation-Portal-Backend.git
+git clone git@github.com:Satwik260204/TA_Backend.git
 ```
 
 ###### HTTPS
 
 ```
-git clone https://github.com/RGLxAkuma/TA-Allocation-Portal-Backend.git
+git clone https://github.com/Satwik260204/TA_Backend.git
 ```
 
 ###### GitHub CLI
 
 ```
-gh repo clone RGLxAkuma/TA-Allocation-Portal-Backend
+gh repo clone Satwik260204/TA_Backend.git
 ```
 
 ##### Install npx if not already installed - This can be used to run react using the local version.
@@ -144,14 +144,14 @@ npm i -g npx
 Execute the following commands :
 
 ```
-cd TA-Allocation-Portal-Frontend
+cd TA_Frontend
 npm i
 ```
 
 execute the following commands :
 
 ```
-cd TA-Allocation-Portal-Backend
+cd TA_Backend
 npm i
 ```
 
